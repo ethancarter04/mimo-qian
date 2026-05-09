@@ -18,8 +18,8 @@ export interface HealthInfo {
 
 export async function checkHealth(): Promise<HealthInfo> {
   try {
-    const data = await request<{ status: string; mock_mode: boolean }>('/health')
-    return { ok: true, mockMode: data.mock_mode }
+    const data = await request<{ status: string; mock_mode?: boolean }>('/health')
+    return { ok: true, mockMode: Boolean(data.mock_mode) }
   } catch {
     return { ok: false, mockMode: false }
   }

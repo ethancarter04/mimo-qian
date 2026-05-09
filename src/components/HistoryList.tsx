@@ -1,7 +1,5 @@
 import { Clock, CheckCircle, XCircle, Loader2 } from 'lucide-react'
 import type { Job } from '../types'
-import { audioUrl } from '../api'
-import clsx from 'clsx'
 
 interface Props {
   jobs: Job[]
@@ -38,13 +36,13 @@ export default function HistoryList({ jobs, onPlay }: Props) {
     <div className="bg-white rounded-lg border border-border p-4">
       <div className="flex items-center gap-2 text-sm font-medium text-main mb-3">
         <Clock size={16} />
-        生成历史
+        最近历史
       </div>
       <div className="space-y-2 max-h-80 overflow-y-auto scrollbar-thin">
         {jobs.map((j) => (
           <div
             key={j.job_id}
-            className="flex items-center gap-3 px-3 py-2 rounded-md bg-surface text-sm"
+            className="flex items-center gap-3 px-3 py-2 rounded-md bg-surface text-sm transition-colors hover:bg-primary/5"
           >
             {statusIcon[j.status]}
             <span className="text-xs text-muted w-10 shrink-0">

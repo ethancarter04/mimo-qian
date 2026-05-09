@@ -1,14 +1,16 @@
 import { useRef, useEffect } from 'react'
-import { Play, Pause, Download, Loader2 } from 'lucide-react'
+import { Play, Pause, Download, Loader2, FileAudio } from 'lucide-react'
 import { useState } from 'react'
 import { audioUrl } from '../api'
+import type { JobStatus } from '../types'
 
 interface Props {
   filename: string | null
   loading: boolean
+  status?: JobStatus
 }
 
-export default function AudioResult({ filename, loading }: Props) {
+export default function AudioResult({ filename, loading, status }: Props) {
   const audioRef = useRef<HTMLAudioElement>(null)
   const [playing, setPlaying] = useState(false)
 
@@ -41,25 +43,38 @@ export default function AudioResult({ filename, loading }: Props) {
   }, [])
 
   return (
-    <div className="bg-white rounded-lg border border-border p-4">
-      <div className="text-sm font-medium text-main mb-3">生成结果</div>
+    <div className="bg-white rounded-lg border border-border p-5">
+      <div className="text-sm font-medium text-main border-b border-border pb-3 mb-3">生成结果</div>
 
       {loading && (
-        <div className="flex items-center gap-2 text-sm text-primary py-8 justify-center">
-          <Loader2 size={18} className="animate-spin" />
-          正在生成...
+        <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
+          <Loader2 size={28} className="animate-spin text-primary" />
+          <div>
+            <p className="text-sm font-medium text-main">
+              {status === 'queued' ? '任务排队中...' : 'AI 正在生成语音...'}
+            </p>
+            <p className="mt-1 text-xs text-muted">页面不会卡住，可以等待轮询完成</p>
+          </div>
         </div>
       )}
 
       {!loading && !filename && (
-        <div className="text-sm text-muted text-center py-8">
-          生成完成后可在此播放
+        <div className="flex flex-col items-center justify-center gap-3 py-12 text-center text-muted">
+          <Play size={28} />
+          <p className="text-sm">生成完成后可在此播放</p>
         </div>
       )}
 
       {!loading && filename && (
         <div className="space-y-3">
           <audio ref={audioRef} preload="auto" />
+          <div className="flex items-center gap-3 rounded-md bg-surface p-3">
+            <FileAudio size={28} className="shrink-0 text-success" />
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium text-main">{filename}</p>
+              <p className="text-xs text-success">生成成功</p>
+            </div>
+          </div>
           <div className="flex items-center gap-2">
             <button
               onClick={toggle}

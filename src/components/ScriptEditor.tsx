@@ -4,9 +4,10 @@ interface Props {
   text: string
   onChange: (text: string) => void
   onOptimize?: () => void
+  disabled?: boolean
 }
 
-export default function ScriptEditor({ text, onChange, onOptimize }: Props) {
+export default function ScriptEditor({ text, onChange, onOptimize, disabled = false }: Props) {
   return (
     <div className="bg-white rounded-lg border border-border p-4">
       <div className="flex items-center justify-between mb-3">
@@ -18,10 +19,11 @@ export default function ScriptEditor({ text, onChange, onOptimize }: Props) {
       </div>
       <textarea
         value={text}
+        disabled={disabled}
         onChange={(e) => onChange(e.target.value.slice(0, 1000))}
         placeholder="输入要朗读的文本..."
-        rows={6}
-        className="w-full resize-none rounded-md border border-border bg-surface px-3 py-2 text-sm text-main placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
+        rows={10}
+        className="w-full resize-none rounded-md border border-border bg-surface px-3 py-2 text-sm text-main placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary disabled:opacity-60 transition"
       />
       {onOptimize && (
         <button

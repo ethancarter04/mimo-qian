@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { Radio, Loader2, Zap } from 'lucide-react'
-import type { Mode, Job } from './types'
-import { checkHealth, createJob, getJob, getHistory, audioUrl } from './api'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { Activity, AlertCircle, Loader2, Zap } from 'lucide-react'
+import type { Job, Mode } from './types'
+import { checkHealth, createJob, getHistory, getJob } from './api'
 import ModeTabs from './components/ModeTabs'
 import ScriptEditor from './components/ScriptEditor'
 import DirectorPrompt from './components/DirectorPrompt'
@@ -25,12 +25,21 @@ export default function App() {
   const [cloneSample, setCloneSample] = useState<string | null>(null)
   const [resultFile, setResultFile] = useState<string | null>(null)
   const [generating, setGenerating] = useState(false)
-  const [currentJobId, setCurrentJobId] = useState<string | null>(null)
+  const [currentJob, setCurrentJob] = useState<Job | null>(null)
   const [history, setHistory] = useState<Job[]>([])
   const [apiOk, setApiOk] = useState<boolean | null>(null)
   const [mockMode, setMockMode] = useState(false)
   const [error, setError] = useState('')
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const refreshHistory = useCallback(async () => {
+    try {
+      const records = await getHistory()
+      setHistory(records.slice(0, 20))
+    } catch {
+      // History is useful but should not block the workspace.
+    }
+  }, [])
 
   useEffect(() => {
     checkHealth().then((info) => {
@@ -38,18 +47,12 @@ export default function App() {
       setMockMode(info.mockMode)
     })
     refreshHistory()
-  }, [])
-
-  const refreshHistory = useCallback(async () => {
-    try {
-      const h = await getHistory()
-      setHistory(h)
-    } catch {}
-  }, [])
+  }, [refreshHistory])
 
   useEffect(() => {
     setDirectorPrompt(DIRECTOR_PRESETS[mode])
     setVoiceDesc('')
+    setError('')
   }, [mode])
 
   useEffect(() => {
@@ -58,70 +61,99 @@ export default function App() {
     }
   }, [])
 
+  const stopPolling = () => {
+    if (pollRef.current) {
+      clearInterval(pollRef.current)
+      pollRef.current = null
+    }
+  }
+
   const startPolling = useCallback((jobId: string) => {
-    if (pollRef.current) clearInterval(pollRef.current)
+    stopPolling()
     pollRef.current = setInterval(async () => {
       try {
         const job = await getJob(jobId)
+        setCurrentJob(job)
+
         if (job.status === 'done') {
-          if (pollRef.current) clearInterval(pollRef.current)
+          stopPolling()
           setResultFile(job.filename)
           setGenerating(false)
-          setCurrentJobId(null)
           refreshHistory()
         } else if (job.status === 'failed') {
-          if (pollRef.current) clearInterval(pollRef.current)
+          stopPolling()
           setError(job.error || '生成失败')
           setGenerating(false)
-          setCurrentJobId(null)
           refreshHistory()
         }
       } catch {
-        // network hiccup, keep polling
+        // A short network hiccup should not stop an active generation.
       }
     }, 1000)
   }, [refreshHistory])
 
   const handleGenerate = async () => {
-    if (!text.trim()) return
+    const cleanText = text.trim()
     setError('')
+
+    if (!cleanText) {
+      setError('请输入朗读文本')
+      return
+    }
+    if (mode === 'design' && !voiceDesc.trim()) {
+      setError('请先填写音色描述')
+      return
+    }
+    if (mode === 'clone' && !cloneSample) {
+      setError('请先上传参考音频')
+      return
+    }
+
     setResultFile(null)
+    setCurrentJob(null)
     setGenerating(true)
 
     try {
       const job = await createJob({
         mode,
-        text,
+        text: cleanText,
         director_prompt: directorPrompt,
         voice: mode === 'preset' ? voice : '',
         voice_description: mode === 'design' ? voiceDesc : '',
         output_format: 'wav',
         clone_sample: mode === 'clone' ? cloneSample || undefined : undefined,
       })
-      setCurrentJobId(job.job_id)
+      setCurrentJob(job)
       startPolling(job.job_id)
     } catch (e: any) {
-      setError(e.message)
+      setError(e.message || '创建生成任务失败')
       setGenerating(false)
     }
   }
 
   const handlePlayHistory = (filename: string) => {
     setResultFile(filename)
+    setCurrentJob(null)
+    setError('')
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      <header className="bg-white border-b border-border px-6 py-3 flex items-center justify-between shrink-0">
+    <div className="min-h-screen bg-surface text-main flex flex-col">
+      <header className="h-14 bg-white border-b border-border px-5 lg:px-6 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2.5">
-          <Radio size={20} className="text-primary" />
+          <Activity size={20} className="text-primary" />
           <span className="text-base font-semibold text-main">MiMo Voice Studio</span>
         </div>
         <div className="flex items-center gap-3">
           {mockMode && (
             <span className="text-xs font-medium bg-amber-100 text-amber-700 px-2 py-0.5 rounded">
               MOCK
+            </span>
+          )}
+          {generating && (
+            <span className="hidden sm:flex items-center gap-1.5 text-xs text-primary">
+              <Loader2 size={13} className="animate-spin" />
+              {currentJob?.status === 'queued' ? '排队中' : '生成中'}
             </span>
           )}
           <div className="flex items-center gap-1.5 text-xs">
@@ -137,14 +169,12 @@ export default function App() {
         </div>
       </header>
 
-      {/* Body */}
-      <main className="flex-1 flex flex-col lg:flex-row gap-4 p-4 overflow-hidden">
-        {/* Left: controls */}
-        <div className="w-full lg:w-80 shrink-0 flex flex-col gap-4 overflow-y-auto scrollbar-thin">
-          <ModeTabs active={mode} onChange={setMode} />
+      <main className="flex-1 w-full max-w-[1600px] mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-start">
+        <section className="lg:col-span-3 flex flex-col gap-4 min-w-0">
+          <ModeTabs active={mode} onChange={setMode} disabled={generating} />
 
           {mode === 'preset' && (
-            <VoicePicker selected={voice} onSelect={setVoice} />
+            <VoicePicker selected={voice} onSelect={setVoice} disabled={generating} />
           )}
 
           {mode === 'design' && (
@@ -152,37 +182,46 @@ export default function App() {
               <label className="block text-sm font-medium text-main mb-2">音色描述</label>
               <textarea
                 value={voiceDesc}
+                disabled={generating}
                 onChange={(e) => setVoiceDesc(e.target.value)}
                 placeholder="描述你想要的声音特征，例如：温暖、清澈、年轻女性..."
-                rows={3}
-                className="w-full resize-none rounded-md border border-border bg-surface px-3 py-2 text-sm text-main placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
+                rows={4}
+                className="w-full resize-none rounded-md border border-border bg-surface px-3 py-2 text-sm text-main placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary disabled:opacity-60 transition"
               />
             </div>
           )}
 
           {mode === 'clone' && (
-            <SampleUploader filename={cloneSample} onUploaded={setCloneSample} />
+            <SampleUploader
+              filename={cloneSample}
+              onUploaded={setCloneSample}
+              disabled={generating}
+              onError={setError}
+            />
           )}
 
           <HistoryList jobs={history} onPlay={handlePlayHistory} />
-        </div>
+        </section>
 
-        {/* Center: editor */}
-        <div className="flex-1 flex flex-col gap-4 min-w-0 overflow-y-auto scrollbar-thin">
-          <ScriptEditor text={text} onChange={setText} />
-
-          <DirectorPrompt value={directorPrompt} onChange={setDirectorPrompt} />
-
+        <section className="lg:col-span-6 flex flex-col gap-4 min-w-0">
           {error && (
-            <div className="bg-accent/10 border border-accent/30 rounded-lg px-4 py-3 text-sm text-accent">
-              {error}
+            <div className="bg-accent/10 border border-accent/30 rounded-lg px-4 py-3 text-sm text-accent flex items-center gap-2">
+              <AlertCircle size={16} className="shrink-0" />
+              <span>{error}</span>
             </div>
           )}
+
+          <ScriptEditor text={text} onChange={setText} disabled={generating} />
+          <DirectorPrompt
+            value={directorPrompt}
+            onChange={setDirectorPrompt}
+            disabled={generating}
+          />
 
           <button
             onClick={handleGenerate}
             disabled={generating || !text.trim() || (mode === 'clone' && !cloneSample)}
-            className="flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-primary text-white font-medium text-sm hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition shrink-0"
+            className="flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-primary text-white font-medium text-sm hover:bg-primary/90 disabled:bg-border disabled:text-muted disabled:cursor-not-allowed transition"
           >
             {generating ? (
               <>
@@ -192,44 +231,49 @@ export default function App() {
             ) : (
               <>
                 <Zap size={18} />
-                生成语音
+                开始生成语音
               </>
             )}
           </button>
-        </div>
+        </section>
 
-        {/* Right: result */}
-        <div className="w-full lg:w-80 shrink-0 flex flex-col gap-4 overflow-y-auto scrollbar-thin">
-          <AudioResult filename={resultFile} loading={generating} />
+        <section className="lg:col-span-3 flex flex-col gap-4 min-w-0">
+          <AudioResult filename={resultFile} loading={generating} status={currentJob?.status} />
 
           <div className="bg-white rounded-lg border border-border p-4">
-            <div className="text-sm font-medium text-main mb-2">当前参数</div>
-            <dl className="space-y-1.5 text-xs">
-              <div className="flex justify-between">
+            <div className="text-sm font-medium text-main mb-3">当前参数</div>
+            <dl className="space-y-2 text-xs">
+              <div className="flex justify-between gap-4">
                 <dt className="text-muted">模式</dt>
                 <dd className="text-main">
                   {mode === 'preset' ? '预置音色' : mode === 'design' ? '音色设计' : '语音克隆'}
                 </dd>
               </div>
               {mode === 'preset' && (
-                <div className="flex justify-between">
+                <div className="flex justify-between gap-4">
                   <dt className="text-muted">音色</dt>
                   <dd className="text-main">{voice}</dd>
                 </div>
               )}
-              <div className="flex justify-between">
+              <div className="flex justify-between gap-4">
                 <dt className="text-muted">文本长度</dt>
-                <dd className="text-main">{text.length} 字</dd>
+                <dd className="text-main">{text.length} / 1000 字</dd>
               </div>
-              {currentJobId && (
-                <div className="flex justify-between">
-                  <dt className="text-muted">任务 ID</dt>
-                  <dd className="text-main font-mono">{currentJobId}</dd>
-                </div>
+              {currentJob && (
+                <>
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-muted">任务状态</dt>
+                    <dd className="text-main">{currentJob.status}</dd>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-muted">任务 ID</dt>
+                    <dd className="text-main font-mono truncate">{currentJob.job_id}</dd>
+                  </div>
+                </>
               )}
             </dl>
           </div>
-        </div>
+        </section>
       </main>
     </div>
   )
