@@ -44,7 +44,7 @@ export default function SampleUploader({ onUploaded, filename, disabled = false,
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-premium border border-border/70 p-5">
+    <div className="bg-white/95 rounded-lg shadow-premium border border-black/[0.04] p-5">
       <div className="flex items-center gap-2 text-sm font-semibold text-main mb-3">
         <Upload size={17} className="text-primary" />
         参考音频
@@ -75,7 +75,7 @@ export default function SampleUploader({ onUploaded, filename, disabled = false,
         <button
           onClick={() => inputRef.current?.click()}
           disabled={disabled || uploading}
-          className="w-full px-3 py-6 rounded-md border-2 border-dashed border-border/90 text-muted text-sm hover:border-primary/40 hover:bg-surface hover:text-primary disabled:cursor-not-allowed disabled:opacity-50 transition-all"
+          className="w-full px-3 py-6 rounded-md border-2 border-dashed border-border/90 text-muted text-sm hover:border-primary/30 hover:bg-zinc-50 hover:text-primary disabled:cursor-not-allowed disabled:opacity-50 transition-all"
         >
           <span className="flex flex-col items-center gap-2">
             {uploading ? <Loader2 size={20} className="animate-spin text-primary" /> : <Upload size={20} />}

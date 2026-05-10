@@ -22,7 +22,7 @@ const statusIcon = {
 export default function HistoryList({ jobs, onPlay }: Props) {
   if (jobs.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-premium border border-border/70 p-5">
+      <div className="bg-white/95 rounded-lg shadow-premium border border-black/[0.04] p-5">
         <div className="flex items-center gap-2 text-sm font-semibold text-main mb-3">
           <Clock size={17} className="text-primary" />
           生成历史
@@ -33,7 +33,7 @@ export default function HistoryList({ jobs, onPlay }: Props) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-premium border border-border/70 p-5">
+    <div className="bg-white/95 rounded-lg shadow-premium border border-black/[0.04] p-5">
       <div className="flex items-center gap-2 text-sm font-semibold text-main mb-3">
         <Clock size={17} className="text-primary" />
         最近历史
@@ -42,7 +42,7 @@ export default function HistoryList({ jobs, onPlay }: Props) {
         {jobs.map((j) => (
           <div
             key={j.job_id}
-            className="flex items-center gap-3 px-3 py-2 rounded-md bg-surface text-sm transition-colors hover:bg-primary/5"
+            className="flex items-center gap-3 px-3 py-2 rounded-md bg-zinc-50 text-sm transition-colors hover:bg-zinc-100"
           >
             {statusIcon[j.status]}
             <span className="text-xs text-muted w-10 shrink-0">

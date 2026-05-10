@@ -138,22 +138,22 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-surface text-main flex flex-col selection:bg-primary selection:text-white">
-      <header className="sticky top-0 z-40 h-16 bg-white/85 backdrop-blur-md border-b border-border/70 px-5 lg:px-6 flex items-center justify-between shrink-0">
+    <div className="min-h-screen text-main flex flex-col selection:bg-primary selection:text-white">
+      <header className="sticky top-0 z-40 h-16 bg-white/75 backdrop-blur-xl border-b border-black/[0.06] px-5 lg:px-7 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-sm">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-primary to-zinc-700 flex items-center justify-center shadow-sm">
             <Activity size={18} className="text-white" />
           </div>
-          <span className="text-base font-semibold tracking-tight text-main">MiMo Voice Studio</span>
+          <span className="text-[17px] font-bold tracking-tight text-primary">MiMo Studio</span>
         </div>
         <div className="flex items-center gap-3">
           {mockMode && (
-            <span className="text-xs font-medium bg-amber-100 text-amber-700 px-2 py-0.5 rounded-md">
+            <span className="text-xs font-semibold bg-amber-100 text-amber-700 px-2.5 py-1 rounded-md">
               MOCK
             </span>
           )}
           {generating && (
-            <span className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-primary bg-primary/5 px-3 py-1.5 rounded-md">
+            <span className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-primary bg-primary/[0.04] px-3 py-1.5 rounded-md border border-black/[0.04]">
               <Loader2 size={13} className="animate-spin" />
               {currentJob?.status === 'queued' ? '排队中' : '生成中'}
             </span>
@@ -176,7 +176,7 @@ export default function App() {
         </div>
       </header>
 
-      <main className="flex-1 w-full max-w-[1600px] mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-start">
+      <main className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-7 items-start">
         <section className="lg:col-span-3 flex flex-col gap-5 min-w-0">
           <ModeTabs active={mode} onChange={setMode} disabled={generating} />
 
@@ -185,7 +185,7 @@ export default function App() {
           )}
 
           {mode === 'design' && (
-            <div className="bg-white rounded-lg shadow-premium border border-border/70 p-5">
+            <div className="bg-white/95 rounded-lg shadow-premium border border-black/[0.04] p-5">
               <label className="block text-sm font-semibold text-main mb-3">音色描述</label>
               <textarea
                 value={voiceDesc}
@@ -193,7 +193,7 @@ export default function App() {
                 onChange={(e) => setVoiceDesc(e.target.value)}
                 placeholder="描述你想要的声音特征，例如：温暖、清澈、年轻女性..."
                 rows={4}
-                className="w-full resize-none rounded-md border border-border/80 bg-surface/70 px-4 py-3 text-sm text-main placeholder:text-muted/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/50 disabled:opacity-60 transition-all"
+                className="w-full resize-none rounded-md border border-border/80 bg-zinc-50/80 px-4 py-3 text-sm text-main placeholder:text-muted/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/40 disabled:opacity-60 transition-all"
               />
             </div>
           )}
@@ -212,7 +212,7 @@ export default function App() {
 
         <section className="lg:col-span-6 flex flex-col gap-5 min-w-0">
           {error && (
-            <div className="bg-accent/10 border border-accent/30 rounded-lg px-4 py-3 text-sm text-accent flex items-start gap-2 shadow-sm">
+            <div className="bg-accent/5 border border-accent/20 rounded-lg px-4 py-3 text-sm text-accent flex items-start gap-2 shadow-sm">
               <AlertCircle size={16} className="shrink-0" />
               <span>{error}</span>
             </div>
@@ -228,7 +228,7 @@ export default function App() {
           <button
             onClick={handleGenerate}
             disabled={generating || !text.trim() || (mode === 'clone' && !cloneSample)}
-            className="group flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg bg-primary text-white font-semibold text-sm hover:bg-primary/90 hover:shadow-premium-hover hover:-translate-y-0.5 disabled:bg-border disabled:text-muted disabled:shadow-none disabled:translate-y-0 disabled:cursor-not-allowed transition-all"
+            className="group flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg bg-primary text-white font-semibold text-sm hover:bg-zinc-800 hover:shadow-premium-hover hover:-translate-y-0.5 disabled:bg-border disabled:text-muted disabled:shadow-none disabled:translate-y-0 disabled:cursor-not-allowed transition-all"
           >
             {generating ? (
               <>
@@ -247,7 +247,7 @@ export default function App() {
         <section className="lg:col-span-3 flex flex-col gap-5 min-w-0">
           <AudioResult filename={resultFile} loading={generating} status={currentJob?.status} />
 
-          <div className="bg-white rounded-lg shadow-premium border border-border/70 p-5">
+          <div className="bg-white/95 rounded-lg shadow-premium border border-black/[0.04] p-5">
             <div className="text-sm font-semibold text-main mb-4">当前参数</div>
             <dl className="space-y-3 text-xs">
               <div className="flex justify-between items-center gap-4">
