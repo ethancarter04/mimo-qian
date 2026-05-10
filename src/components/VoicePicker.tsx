@@ -13,9 +13,9 @@ interface Props {
 
 export default function VoicePicker({ selected, onSelect, disabled = false }: Props) {
   return (
-    <div className="bg-white rounded-lg border border-border p-4">
-      <div className="flex items-center gap-2 text-sm font-medium text-main mb-3">
-        <User size={16} />
+    <div className="bg-white rounded-lg shadow-premium border border-border/70 p-5">
+      <div className="flex items-center gap-2 text-sm font-semibold text-main mb-3">
+        <User size={17} className="text-primary" />
         预置音色
       </div>
       <div className="grid grid-cols-2 gap-2">
@@ -25,10 +25,10 @@ export default function VoicePicker({ selected, onSelect, disabled = false }: Pr
             disabled={disabled}
             onClick={() => onSelect(v)}
             className={clsx(
-              'px-3 py-2 rounded-md text-sm transition-colors border disabled:cursor-not-allowed disabled:opacity-50',
+              'px-3 py-2 rounded-md text-sm transition-all border disabled:cursor-not-allowed disabled:opacity-50',
               selected === v
-                ? 'bg-primary/10 border-primary text-primary font-medium'
-                : 'border-border text-muted hover:border-primary/40 hover:text-main'
+                ? 'bg-primary/10 border-primary/60 text-primary font-semibold shadow-sm'
+                : 'border-border/80 text-muted hover:border-primary/40 hover:bg-surface hover:text-main'
             )}
           >
             {v}

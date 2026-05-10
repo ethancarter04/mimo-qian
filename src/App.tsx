@@ -138,30 +138,37 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-surface text-main flex flex-col">
-      <header className="h-14 bg-white border-b border-border px-5 lg:px-6 flex items-center justify-between shrink-0">
+    <div className="min-h-screen bg-surface text-main flex flex-col selection:bg-primary selection:text-white">
+      <header className="sticky top-0 z-40 h-16 bg-white/85 backdrop-blur-md border-b border-border/70 px-5 lg:px-6 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2.5">
-          <Activity size={20} className="text-primary" />
-          <span className="text-base font-semibold text-main">MiMo Voice Studio</span>
+          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-sm">
+            <Activity size={18} className="text-white" />
+          </div>
+          <span className="text-base font-semibold tracking-tight text-main">MiMo Voice Studio</span>
         </div>
         <div className="flex items-center gap-3">
           {mockMode && (
-            <span className="text-xs font-medium bg-amber-100 text-amber-700 px-2 py-0.5 rounded">
+            <span className="text-xs font-medium bg-amber-100 text-amber-700 px-2 py-0.5 rounded-md">
               MOCK
             </span>
           )}
           {generating && (
-            <span className="hidden sm:flex items-center gap-1.5 text-xs text-primary">
+            <span className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-primary bg-primary/5 px-3 py-1.5 rounded-md">
               <Loader2 size={13} className="animate-spin" />
               {currentJob?.status === 'queued' ? '排队中' : '生成中'}
             </span>
           )}
           <div className="flex items-center gap-1.5 text-xs">
-            <span
-              className={`w-2 h-2 rounded-full ${
-                apiOk === true ? 'bg-success' : apiOk === false ? 'bg-accent' : 'bg-muted'
-              }`}
-            />
+            <span className="relative flex h-2.5 w-2.5">
+              {apiOk === true && (
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-20" />
+              )}
+              <span
+                className={`relative inline-flex h-2.5 w-2.5 rounded-full ${
+                  apiOk === true ? 'bg-success' : apiOk === false ? 'bg-accent' : 'bg-muted'
+                }`}
+              />
+            </span>
             <span className="text-muted">
               {apiOk === true ? 'API 已连接' : apiOk === false ? 'API 未连接' : '检查中...'}
             </span>
@@ -169,8 +176,8 @@ export default function App() {
         </div>
       </header>
 
-      <main className="flex-1 w-full max-w-[1600px] mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-start">
-        <section className="lg:col-span-3 flex flex-col gap-4 min-w-0">
+      <main className="flex-1 w-full max-w-[1600px] mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-start">
+        <section className="lg:col-span-3 flex flex-col gap-5 min-w-0">
           <ModeTabs active={mode} onChange={setMode} disabled={generating} />
 
           {mode === 'preset' && (
@@ -178,15 +185,15 @@ export default function App() {
           )}
 
           {mode === 'design' && (
-            <div className="bg-white rounded-lg border border-border p-4">
-              <label className="block text-sm font-medium text-main mb-2">音色描述</label>
+            <div className="bg-white rounded-lg shadow-premium border border-border/70 p-5">
+              <label className="block text-sm font-semibold text-main mb-3">音色描述</label>
               <textarea
                 value={voiceDesc}
                 disabled={generating}
                 onChange={(e) => setVoiceDesc(e.target.value)}
                 placeholder="描述你想要的声音特征，例如：温暖、清澈、年轻女性..."
                 rows={4}
-                className="w-full resize-none rounded-md border border-border bg-surface px-3 py-2 text-sm text-main placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary disabled:opacity-60 transition"
+                className="w-full resize-none rounded-md border border-border/80 bg-surface/70 px-4 py-3 text-sm text-main placeholder:text-muted/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/50 disabled:opacity-60 transition-all"
               />
             </div>
           )}
@@ -203,9 +210,9 @@ export default function App() {
           <HistoryList jobs={history} onPlay={handlePlayHistory} />
         </section>
 
-        <section className="lg:col-span-6 flex flex-col gap-4 min-w-0">
+        <section className="lg:col-span-6 flex flex-col gap-5 min-w-0">
           {error && (
-            <div className="bg-accent/10 border border-accent/30 rounded-lg px-4 py-3 text-sm text-accent flex items-center gap-2">
+            <div className="bg-accent/10 border border-accent/30 rounded-lg px-4 py-3 text-sm text-accent flex items-start gap-2 shadow-sm">
               <AlertCircle size={16} className="shrink-0" />
               <span>{error}</span>
             </div>
@@ -221,7 +228,7 @@ export default function App() {
           <button
             onClick={handleGenerate}
             disabled={generating || !text.trim() || (mode === 'clone' && !cloneSample)}
-            className="flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-primary text-white font-medium text-sm hover:bg-primary/90 disabled:bg-border disabled:text-muted disabled:cursor-not-allowed transition"
+            className="group flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg bg-primary text-white font-semibold text-sm hover:bg-primary/90 hover:shadow-premium-hover hover:-translate-y-0.5 disabled:bg-border disabled:text-muted disabled:shadow-none disabled:translate-y-0 disabled:cursor-not-allowed transition-all"
           >
             {generating ? (
               <>
@@ -230,44 +237,50 @@ export default function App() {
               </>
             ) : (
               <>
-                <Zap size={18} />
+                <Zap size={18} className="transition-transform group-hover:scale-110" />
                 开始生成语音
               </>
             )}
           </button>
         </section>
 
-        <section className="lg:col-span-3 flex flex-col gap-4 min-w-0">
+        <section className="lg:col-span-3 flex flex-col gap-5 min-w-0">
           <AudioResult filename={resultFile} loading={generating} status={currentJob?.status} />
 
-          <div className="bg-white rounded-lg border border-border p-4">
-            <div className="text-sm font-medium text-main mb-3">当前参数</div>
-            <dl className="space-y-2 text-xs">
-              <div className="flex justify-between gap-4">
-                <dt className="text-muted">模式</dt>
-                <dd className="text-main">
+          <div className="bg-white rounded-lg shadow-premium border border-border/70 p-5">
+            <div className="text-sm font-semibold text-main mb-4">当前参数</div>
+            <dl className="space-y-3 text-xs">
+              <div className="flex justify-between items-center gap-4">
+                <dt className="text-muted font-medium">模式</dt>
+                <dd className="text-main font-semibold bg-surface px-2.5 py-1 rounded-md">
                   {mode === 'preset' ? '预置音色' : mode === 'design' ? '音色设计' : '语音克隆'}
                 </dd>
               </div>
               {mode === 'preset' && (
-                <div className="flex justify-between gap-4">
-                  <dt className="text-muted">音色</dt>
-                  <dd className="text-main">{voice}</dd>
+                <div className="flex justify-between items-center gap-4">
+                  <dt className="text-muted font-medium">音色</dt>
+                  <dd className="text-main font-semibold">{voice}</dd>
                 </div>
               )}
-              <div className="flex justify-between gap-4">
-                <dt className="text-muted">文本长度</dt>
-                <dd className="text-main">{text.length} / 1000 字</dd>
+              <div className="flex justify-between items-center gap-4">
+                <dt className="text-muted font-medium">文本长度</dt>
+                <dd className="text-main font-mono">{text.length} <span className="text-muted">/ 1000</span></dd>
               </div>
               {currentJob && (
                 <>
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-muted">任务状态</dt>
-                    <dd className="text-main">{currentJob.status}</dd>
+                  <div className="h-px bg-border/70 my-2" />
+                  <div className="flex justify-between items-center gap-4">
+                    <dt className="text-muted font-medium">任务状态</dt>
+                    <dd className="text-main flex items-center gap-1.5">
+                      {currentJob.status === 'running' && <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />}
+                      {currentJob.status}
+                    </dd>
                   </div>
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-muted">任务 ID</dt>
-                    <dd className="text-main font-mono truncate">{currentJob.job_id}</dd>
+                  <div className="flex flex-col gap-1.5">
+                    <dt className="text-muted font-medium">任务 ID</dt>
+                    <dd className="text-muted font-mono text-[11px] break-all bg-surface p-2 rounded-md border border-border/70">
+                      {currentJob.job_id}
+                    </dd>
                   </div>
                 </>
               )}

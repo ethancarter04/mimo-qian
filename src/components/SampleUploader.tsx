@@ -44,9 +44,9 @@ export default function SampleUploader({ onUploaded, filename, disabled = false,
   }
 
   return (
-    <div className="bg-white rounded-lg border border-border p-4">
-      <div className="flex items-center gap-2 text-sm font-medium text-main mb-3">
-        <Upload size={16} />
+    <div className="bg-white rounded-lg shadow-premium border border-border/70 p-5">
+      <div className="flex items-center gap-2 text-sm font-semibold text-main mb-3">
+        <Upload size={17} className="text-primary" />
         参考音频
       </div>
 
@@ -60,7 +60,7 @@ export default function SampleUploader({ onUploaded, filename, disabled = false,
       />
 
       {filename ? (
-        <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-success/10 text-success text-sm">
+        <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-success/10 text-success text-sm border border-success/20">
           <CheckCircle size={16} />
           <span className="truncate flex-1">{displayName || filename}</span>
           <button
@@ -75,7 +75,7 @@ export default function SampleUploader({ onUploaded, filename, disabled = false,
         <button
           onClick={() => inputRef.current?.click()}
           disabled={disabled || uploading}
-          className="w-full px-3 py-6 rounded-md border-2 border-dashed border-border text-muted text-sm hover:border-primary/40 hover:bg-surface hover:text-primary disabled:cursor-not-allowed disabled:opacity-50 transition"
+          className="w-full px-3 py-6 rounded-md border-2 border-dashed border-border/90 text-muted text-sm hover:border-primary/40 hover:bg-surface hover:text-primary disabled:cursor-not-allowed disabled:opacity-50 transition-all"
         >
           <span className="flex flex-col items-center gap-2">
             {uploading ? <Loader2 size={20} className="animate-spin text-primary" /> : <Upload size={20} />}

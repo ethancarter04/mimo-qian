@@ -43,7 +43,7 @@ export default function AudioResult({ filename, loading, status }: Props) {
   }, [])
 
   return (
-    <div className="bg-white rounded-lg border border-border p-5">
+    <div className="bg-white rounded-lg shadow-premium border border-border/70 p-5">
       <div className="text-sm font-medium text-main border-b border-border pb-3 mb-3">生成结果</div>
 
       {loading && (
@@ -68,7 +68,7 @@ export default function AudioResult({ filename, loading, status }: Props) {
       {!loading && filename && (
         <div className="space-y-3">
           <audio ref={audioRef} preload="auto" />
-          <div className="flex items-center gap-3 rounded-md bg-surface p-3">
+          <div className="flex items-center gap-3 rounded-md bg-surface p-3 border border-border/70">
             <FileAudio size={28} className="shrink-0 text-success" />
             <div className="min-w-0">
               <p className="truncate text-sm font-medium text-main">{filename}</p>

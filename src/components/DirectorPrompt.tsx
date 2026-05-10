@@ -8,9 +8,9 @@ interface Props {
 
 export default function DirectorPrompt({ value, onChange, disabled = false }: Props) {
   return (
-    <div className="bg-white rounded-lg border border-border p-4">
-      <div className="flex items-center gap-2 text-sm font-medium text-main mb-3">
-        <Clapperboard size={16} />
+    <div className="bg-white rounded-lg shadow-premium border border-border/70 p-5">
+      <div className="flex items-center gap-2 text-sm font-semibold text-main mb-3">
+        <Clapperboard size={17} className="text-primary" />
         导演提示词
       </div>
       <textarea
@@ -19,7 +19,7 @@ export default function DirectorPrompt({ value, onChange, disabled = false }: Pr
         onChange={(e) => onChange(e.target.value)}
         placeholder="例如：请使用温柔、克制、稍慢的语气朗读。"
         rows={3}
-        className="w-full resize-none rounded-md border border-border bg-surface px-3 py-2 text-sm text-main placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary disabled:opacity-60 transition"
+        className="w-full resize-none rounded-md border border-border/80 bg-surface/70 px-4 py-3 text-sm text-main placeholder:text-muted/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/50 disabled:opacity-60 transition-all"
       />
     </div>
   )
