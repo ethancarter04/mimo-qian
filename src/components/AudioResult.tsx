@@ -43,11 +43,11 @@ export default function AudioResult({ filename, loading, status }: Props) {
   }, [])
 
   return (
-    <div className="bg-white/95 rounded-lg shadow-premium border border-black/[0.04] p-5">
+    <div className="bg-white/95 rounded-lg shadow-premium border border-black/[0.04] p-4">
       <div className="text-sm font-medium text-main border-b border-border pb-3 mb-3">生成结果</div>
 
       {loading && (
-        <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
+        <div className="flex flex-col items-center justify-center gap-3 py-8 text-center">
           <Loader2 size={28} className="animate-spin text-primary" />
           <div>
             <p className="text-sm font-medium text-main">
@@ -59,7 +59,7 @@ export default function AudioResult({ filename, loading, status }: Props) {
       )}
 
       {!loading && !filename && (
-        <div className="flex flex-col items-center justify-center gap-3 py-12 text-center text-muted">
+        <div className="flex flex-col items-center justify-center gap-3 py-8 text-center text-muted">
           <Play size={28} />
           <p className="text-sm">生成完成后可在此播放</p>
         </div>
@@ -75,10 +75,10 @@ export default function AudioResult({ filename, loading, status }: Props) {
               <p className="text-xs text-success">生成成功</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="grid grid-cols-2 gap-2">
             <button
               onClick={toggle}
-              className="flex items-center gap-2 px-4 py-2 rounded-md bg-primary text-white text-sm font-medium hover:bg-primary/90 transition"
+              className="flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-primary text-white text-sm font-medium hover:bg-zinc-800 transition"
             >
               {playing ? <Pause size={16} /> : <Play size={16} />}
               {playing ? '暂停' : '播放'}
@@ -86,7 +86,7 @@ export default function AudioResult({ filename, loading, status }: Props) {
             <a
               href={audioUrl(filename)}
               download={filename}
-              className="flex items-center gap-2 px-4 py-2 rounded-md border border-border text-sm text-muted hover:text-main hover:border-primary/40 transition"
+              className="flex items-center justify-center gap-2 px-4 py-2 rounded-md border border-border text-sm text-muted hover:text-main hover:border-primary/40 transition"
             >
               <Download size={16} />
               下载

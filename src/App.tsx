@@ -9,6 +9,7 @@ import VoicePicker from './components/VoicePicker'
 import SampleUploader from './components/SampleUploader'
 import AudioResult from './components/AudioResult'
 import HistoryList from './components/HistoryList'
+import type { EditorHeight } from './components/ScriptEditor'
 
 const DIRECTOR_PRESETS: Record<Mode, string> = {
   preset: '请使用温柔、克制、稍慢的语气朗读。语速适中，音量自然。整体风格是温暖叙事。适合场景：有声书、独白。需要自然、有呼吸感，避免机械播报。',
@@ -30,6 +31,7 @@ export default function App() {
   const [apiOk, setApiOk] = useState<boolean | null>(null)
   const [mockMode, setMockMode] = useState(false)
   const [error, setError] = useState('')
+  const [editorHeight, setEditorHeight] = useState<EditorHeight>('comfortable')
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const refreshHistory = useCallback(async () => {
@@ -176,8 +178,8 @@ export default function App() {
         </div>
       </header>
 
-      <main className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-7 items-start">
-        <section className="lg:col-span-3 flex flex-col gap-5 min-w-0">
+      <main className="flex-1 w-full max-w-[1500px] mx-auto p-4 sm:p-5 lg:p-6 grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)_320px] gap-5 items-start">
+        <section className="flex flex-col gap-4 min-w-0 lg:sticky lg:top-20">
           <ModeTabs active={mode} onChange={setMode} disabled={generating} />
 
           {mode === 'preset' && (
@@ -185,7 +187,7 @@ export default function App() {
           )}
 
           {mode === 'design' && (
-            <div className="bg-white/95 rounded-lg shadow-premium border border-black/[0.04] p-5">
+            <div className="bg-white/95 rounded-lg shadow-premium border border-black/[0.04] p-4">
               <label className="block text-sm font-semibold text-main mb-3">音色描述</label>
               <textarea
                 value={voiceDesc}
@@ -210,7 +212,7 @@ export default function App() {
           <HistoryList jobs={history} onPlay={handlePlayHistory} />
         </section>
 
-        <section className="lg:col-span-6 flex flex-col gap-5 min-w-0">
+        <section className="flex flex-col gap-4 min-w-0">
           {error && (
             <div className="bg-accent/5 border border-accent/20 rounded-lg px-4 py-3 text-sm text-accent flex items-start gap-2 shadow-sm">
               <AlertCircle size={16} className="shrink-0" />
@@ -218,36 +220,98 @@ export default function App() {
             </div>
           )}
 
-          <ScriptEditor text={text} onChange={setText} disabled={generating} />
+          <ScriptEditor
+            text={text}
+            onChange={setText}
+            disabled={generating}
+            height={editorHeight}
+            onHeightChange={setEditorHeight}
+          />
+
+          <div className="bg-white/95 rounded-lg shadow-premium border border-black/[0.04] p-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="text-xs text-muted">
+              {mode === 'clone' && !cloneSample
+                ? '上传参考音频后即可生成'
+                : mode === 'design' && !voiceDesc.trim()
+                  ? '填写音色描述后即可生成'
+                  : '准备就绪后点击生成，结果会出现在右侧'}
+            </div>
+            <button
+              onClick={handleGenerate}
+              disabled={generating || !text.trim() || (mode === 'clone' && !cloneSample)}
+              className="group w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-primary text-white font-semibold text-sm hover:bg-zinc-800 hover:shadow-premium-hover hover:-translate-y-0.5 disabled:bg-border disabled:text-muted disabled:shadow-none disabled:translate-y-0 disabled:cursor-not-allowed transition-all"
+            >
+              {generating ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  生成中...
+                </>
+              ) : (
+                <>
+                  <Zap size={18} className="transition-transform group-hover:scale-110" />
+                  开始生成语音
+                </>
+              )}
+            </button>
+          </div>
+
           <DirectorPrompt
             value={directorPrompt}
             onChange={setDirectorPrompt}
             disabled={generating}
           />
 
-          <button
-            onClick={handleGenerate}
-            disabled={generating || !text.trim() || (mode === 'clone' && !cloneSample)}
-            className="group flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg bg-primary text-white font-semibold text-sm hover:bg-zinc-800 hover:shadow-premium-hover hover:-translate-y-0.5 disabled:bg-border disabled:text-muted disabled:shadow-none disabled:translate-y-0 disabled:cursor-not-allowed transition-all"
-          >
-            {generating ? (
-              <>
-                <Loader2 size={18} className="animate-spin" />
-                生成中...
-              </>
-            ) : (
-              <>
-                <Zap size={18} className="transition-transform group-hover:scale-110" />
-                开始生成语音
-              </>
-            )}
-          </button>
+          <div className="lg:hidden">
+            <AudioResult filename={resultFile} loading={generating} status={currentJob?.status} />
+          </div>
         </section>
 
-        <section className="lg:col-span-3 flex flex-col gap-5 min-w-0">
+        <section className="hidden lg:flex flex-col gap-4 min-w-0 lg:sticky lg:top-20">
           <AudioResult filename={resultFile} loading={generating} status={currentJob?.status} />
 
-          <div className="bg-white/95 rounded-lg shadow-premium border border-black/[0.04] p-5">
+          <div className="bg-white/95 rounded-lg shadow-premium border border-black/[0.04] p-4">
+            <div className="text-sm font-semibold text-main mb-4">当前参数</div>
+            <dl className="space-y-3 text-xs">
+              <div className="flex justify-between items-center gap-4">
+                <dt className="text-muted font-medium">模式</dt>
+                <dd className="text-main font-semibold bg-surface px-2.5 py-1 rounded-md">
+                  {mode === 'preset' ? '预置音色' : mode === 'design' ? '音色设计' : '语音克隆'}
+                </dd>
+              </div>
+              {mode === 'preset' && (
+                <div className="flex justify-between items-center gap-4">
+                  <dt className="text-muted font-medium">音色</dt>
+                  <dd className="text-main font-semibold">{voice}</dd>
+                </div>
+              )}
+              <div className="flex justify-between items-center gap-4">
+                <dt className="text-muted font-medium">文本长度</dt>
+                <dd className="text-main font-mono">{text.length} <span className="text-muted">/ 1000</span></dd>
+              </div>
+              {currentJob && (
+                <>
+                  <div className="h-px bg-border/70 my-2" />
+                  <div className="flex justify-between items-center gap-4">
+                    <dt className="text-muted font-medium">任务状态</dt>
+                    <dd className="text-main flex items-center gap-1.5">
+                      {currentJob.status === 'running' && <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />}
+                      {currentJob.status}
+                    </dd>
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <dt className="text-muted font-medium">任务 ID</dt>
+                    <dd className="text-muted font-mono text-[11px] break-all bg-surface p-2 rounded-md border border-border/70">
+                      {currentJob.job_id}
+                    </dd>
+                  </div>
+                </>
+              )}
+            </dl>
+          </div>
+        </section>
+
+        <section className="lg:hidden flex flex-col gap-4 min-w-0">
+          <div className="bg-white/95 rounded-lg shadow-premium border border-black/[0.04] p-4">
             <div className="text-sm font-semibold text-main mb-4">当前参数</div>
             <dl className="space-y-3 text-xs">
               <div className="flex justify-between items-center gap-4">

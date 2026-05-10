@@ -13,7 +13,7 @@ interface Props {
 
 export default function VoicePicker({ selected, onSelect, disabled = false }: Props) {
   return (
-    <div className="bg-white/95 rounded-lg shadow-premium border border-black/[0.04] p-5">
+    <div className="bg-white/95 rounded-lg shadow-premium border border-black/[0.04] p-4">
       <div className="flex items-center gap-2 text-sm font-semibold text-main mb-3">
         <User size={17} className="text-primary" />
         预置音色
